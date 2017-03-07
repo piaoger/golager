@@ -11,7 +11,6 @@ lager is "warehouse" in Germany.
 golager is datum lager(datastore) written in golang. It's really a headache to store data in different cloud storage providers: aliyun oss, qiniu, aws, local file system, and so on. I want a small library to support them all in one and that's golager.
 
 
-
 ## What's in golager?
 
 ```
@@ -34,6 +33,43 @@ golager is datum lager(datastore) written in golang. It's really a headache to s
     └── README.md
 ```
 
+## functions
+
+- buckets
+- upload
+- download
+
+
+## how to use
+
+```
+export OSS_ACCESS_KEY_ID=<OSS_ACCESS_KEY_ID>
+export OSS_ACCESS_KEY_SECRET=<OSS_ACCESS_KEY_SECRET>
+export OSS_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
+./lager-cli oss download  /bucket/key localfile
+```
+
+
+```
+QINIU_ACCESS_KEY=<QINIU_ACCESS_KEY>
+QINIU_SECRET_KEY=<QINIU_SECRET_KEY>
+QINIU_DOMAIN=<QINIU_DOMAIN>
+./lager-cli qiniu download /bucket/key localfile
+```
+
+## references
+
+qshell: qiniu command line tool  [link](https://github.com/qiniu/qshell)
+
+rclone: rsync for cloud storages [link](https://github.com/ncw/rclone)
+
+go-kit: go libraries for microservices [link](https://github.com/go-kit/kit)
+
+aliyun oss go sdk: [link](https://help.aliyun.com/document_detail/32144.html)
+
+qiniu go sdk: [link](https://developer.qiniu.com/kodo/sdk/go)
+
+go-ethereum: Makefile & Dockerfile [link](ttps://github.com/ethereum/go-ethereum)
 
 
 

@@ -49,6 +49,8 @@ rm -rf $APP_CACHE_DIR/golang
 # -----------------------------------------
 # golang x/net
 # -----------------------------------------
+
+
 echo "installing golang.com/x/net"
 cd $APP_CACHE_DIR
 
@@ -69,3 +71,29 @@ unzip -q $NET_RELEASE_PACKAGE_NAME.zip
 
 mv ${APP_ROOT}/vendor/src/golang.org/x/$NET_RELEASE_PACKAGE_NAME ${APP_ROOT}/vendor/src/golang.org/x/net
 rm $NET_RELEASE_PACKAGE_NAME.zip
+
+# -----------------------------------------
+# golang x/net
+# -----------------------------------------
+
+
+# echo "installing golang.com/x/text"
+# cd $APP_CACHE_DIR
+
+# NET_RELEASE_PACKAGE=master.zip
+# NET_RELEASE_PACKAGE_NAME=golang-text-master
+
+# NET_RELEASE_PACKAGE_DOWNLOAD_URL=https://github.com/golang/text/archive/$NET_RELEASE_PACKAGE
+# if [ ! -f $NET_RELEASE_PACKAGE_NAME.zip ]; then
+#     wget $NET_RELEASE_PACKAGE_DOWNLOAD_URL -O $NET_RELEASE_PACKAGE_NAME.zip
+# fi
+
+# rm -rf ${APP_ROOT}/vendor/src/golang.org/x/
+# mkdir -p ${APP_ROOT}/vendor/src/golang.org/x/
+# cp ${APP_CACHE_DIR}/$NET_RELEASE_PACKAGE_NAME.zip ${APP_ROOT}/vendor/src/golang.org/x/
+
+# cd ${APP_ROOT}/vendor/src/golang.org/x/
+# unzip -q $NET_RELEASE_PACKAGE_NAME.zip
+
+# mv ${APP_ROOT}/vendor/src/golang.org/x/$NET_RELEASE_PACKAGE_NAME ${APP_ROOT}/vendor/src/golang.org/x/text
+# rm $NET_RELEASE_PACKAGE_NAME.zip

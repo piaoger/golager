@@ -1,7 +1,6 @@
 
 OS := $(shell uname -s)
 THIS_FOLDER := $(shell cd ${0%/*} && echo ${PWD})
-NOW = $(shell date "+%G%m%d%H%M%S")
 
 export PATH :=${THIS_FOLDER}/bin:${PATH}
 
@@ -18,28 +17,34 @@ GOFILES :=$(wildcard ${THIS_FOLDER}/src/*.go ${THIS_FOLDER}/src/**/*.go)
 
 # vendoring go packages
 # for golang.org deps, please add to vendor/golang.org manually..
-# e.g, golang.com/x/net is added during golang bootstrapping
-GO_EXTDEPS := \
+# golang.com/x/net is added during golang bootstrapping
+GO_DEPS := \
 	"github.com/BurntSushi/toml" \
 	"github.com/kardianos/osext" \
 	"github.com/aws/aws-sdk-go" \
 	"github.com/aliyun/aliyun-oss-go-sdk/oss" \
-	"qiniupkg.com/api.v7"
+	"qiniupkg.com/api.v7" \
+	"github.com/qiniu/api.v6"
 
 .PHONY: build
 
+
+all: bootstrap build test
+
 help:
 	@echo "#-------------------------------------"
-	@echo "# PROJECT LAGER"
+	@echo "# PROJECT LAGER GO!"
 	@echo "#-------------------------------------"
-	@echo " bootstrap    - setup devel environment"
-	@echo " build        - build the project"
-	@echo " clean        - cleanup and refresh"
-	@echo " update       - update dependencies"
-	@echo " upgrade      - upgrade dependencies"
-	@echo " test         - run go test"
-	@echo " dockerize    - create docker container"
-	@echo " makebundle   - build package"
+	@echo " bootstrap       - setup devel environment"
+	@echo " build           - build the project"
+	@echo " clean           - cleanup and refresh"
+	@echo " godeps-list     - list dependencies"
+	@echo " godeps-clean    - clean dependencies"
+	@echo " godeps-update   - update dependencies"
+	@echo " godeps-upgrade  - upgrade dependencies"
+	@echo " test            - run go test"
+	@echo " dockerize       - create docker container"
+	@echo " bundle          - build package"
 
 bootstrap:
 	@echo 'provision golang ...'
@@ -49,39 +54,40 @@ build:
 	@rm -rf build
 	@echo 'golang code auto formatting ...'
 	@${GOFMT} -s -w ${GOFILES}
-	@echo 'building lager-cli ...'
+	@echo 'building lager tools ...'
 	@${GO} build -o build/bin/lager-cli ./src/lager-cli
+	@${GO} build -o build/bin/lager-oss ./src/lager-cli.oss
+	@${GO} build -o build/bin/lager-qiniu ./src/lager-cli.qiniu
 
 clean:
 	@echo 'clean up and refresh ...'
 	@rm -rf build
 	@rm -rf bundle
 
+test:
+	@echo "TODO: health checking ..."
 
-update:
+bundle:
+	@echo "TODO: build package ..."
+
+godeps-update:
 	@echo 'update dependencies ...'
-	@for godep in ${GO_EXTDEPS}; do \
+	@for godep in ${GO_DEPS}; do \
 		${GO} get -v -d $${godep}; \
-	done ;
+	done;
 
 	@# remove hidden .git stuffs, so that they can be put into git repo
 	@echo 'deps are disconnectted from git ...'
 	@bash -c "find vendor -name '.git'       -and -type d|xargs rm -rf"
 	@bash -c "find vendor -name '.gitignore' -and -type f|xargs rm -f"
 
-upgrade:
+godeps-clean:
 	@echo 'clean dependencies ...'
 	@rm -rf vendor/src/github.com vendor/src/gopkg.in vendor/pkg
 
-	@echo 'update dependencies ...'
-	@for godep in ${GO_EXTDEPS}; do \
-		${GO} get -v -d $${godep}; \
-	done ;
+godeps-upgrade: godeps-clean godeps-update
 
-	# remove hidden .git stuffs, so that they can be put into git repo
-	@echo 'deps are disconnectted from git ...'
-	@bash -c "find vendor -name '.git'       -and -type d|xargs rm -rf"
-	@bash -c "find vendor -name '.gitignore' -and -type f|xargs rm -f"
+godeps-list:
+	@${GO} list -f '{{join .Deps "\n"}}' ./... | xargs ${GO} list -f '{{if not .Standard}}{{.ImportPath}}{{end}}'
 
-test:
-	@echo "TODO: health checking ..."
+
