@@ -22,3 +22,17 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+.DS_Store
+
+# build
+bin/apps/
+bin/cache/
+build/
+bundle/
+
+# golang externals
+#vendor/src/github.com
+#vendor/src/google.golang.com
+#vendor/src/gopkg.in
+#vendor/src/qiniupkg.com
