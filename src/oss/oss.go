@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"strconv"
-	//"strings"
+	"strings"
 	"time"
 )
 
@@ -71,9 +71,12 @@ func listDir(path string) []string {
 	for i := 0; i < len(results); i += 1 {
 		lsRes := results[i]
 		for j := 0; j < len(lsRes.CommonPrefixes); j += 1 {
-			dirs = append(dirs, lsRes.CommonPrefixes[j])
+			key := lsRes.CommonPrefixes[j]
+			dirs = append(dirs, strings.TrimSuffix(key, "/"))
 		}
 	}
+
+	fmt.Printf("dir: %s", dirs)
 
 	return dirs
 }

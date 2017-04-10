@@ -8,6 +8,7 @@ func listbuckets() {
 	oss.ConfigFromEnv()
 	oss.ListBuckets()
 }
+
 func upload(from string, to string) {
 	oss.ConfigFromEnv()
 	oss.Upload(from, to)
