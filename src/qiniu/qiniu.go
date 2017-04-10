@@ -7,6 +7,7 @@ import (
 	"qiniupkg.com/api.v7/conf"
 	"qiniupkg.com/api.v7/kodo"
 	"qiniupkg.com/api.v7/kodocli"
+	"time"
 )
 
 func domains(bucket string) []string {
@@ -105,4 +106,32 @@ func Download(from string, to string) {
 	url := downloadUrl(domain, key)
 	fmt.Printf("download url: %s\n", url)
 	utils.DownloadFromUrl(url, to)
+}
+
+func Stat(path string) (map[string]interface{}, error) {
+	conf.ACCESS_KEY = QINIU_ACCESS_KEY
+	conf.SECRET_KEY = QINIU_SECRET_KEY
+
+	bucket, key, err := utils.ParseAddress(path)
+	stat(bucket, key)
+
+	size := 0
+	modified := time.Now()
+
+	result := map[string]interface{}{
+		"size":     size,
+		"modified": modified,
+	}
+
+	return result, err
+}
+
+func ListFiles(path string) []string {
+	//not impl now
+	return []string{}
+}
+
+func ListDir(path string) []string {
+	//not impl now
+	return []string{}
 }
