@@ -14,6 +14,8 @@ func supported_providers(provider string) bool {
 func subcommand(provider string) string {
 	if provider == "s3" {
 		return "lager-s3"
+	} else if provider == "s3" {
+		return "lager-s3"
 	} else if provider == "oss" {
 		return "lager-oss"
 	} else if provider == "qiniu" {

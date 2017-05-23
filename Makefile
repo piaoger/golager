@@ -2,6 +2,8 @@
 OS := $(shell uname -s)
 THIS_FOLDER := $(shell cd ${0%/*} && echo ${PWD})
 
+TIMESTAMP = $(shell date "+%G%m%d%H%M%S")
+
 export PATH :=${THIS_FOLDER}/bin:${PATH}
 
 # --------------------------------------------
@@ -44,7 +46,8 @@ help:
 	@echo " godeps-upgrade  - upgrade dependencies"
 	@echo " test            - run go test"
 	@echo " dockerize       - create docker container"
-	@echo " bundle          - build package"
+	@echo " makebundle      - build package"
+
 
 bootstrap:
 	@echo 'provision golang ...'
@@ -67,8 +70,13 @@ clean:
 test:
 	@echo "TODO: health checking ..."
 
-bundle:
-	@echo "TODO: build package ..."
+makebundle:
+	@echo "build package ..."
+	@rm -rf ${THIS_FOLDER}/bundle && \
+	 mkdir -p ${THIS_FOLDER}/bundle/lager-${TODAY} && \
+	 cp -r ${THIS_FOLDER}/build/*  ${THIS_FOLDER}/bundle/lager-${TODAY} &&  \
+	 cd ${THIS_FOLDER}/bundle && \
+	 zip -r lager-${TODAY}.zip lager-${TIMESTAMP}
 
 godeps-update:
 	@echo 'update dependencies ...'

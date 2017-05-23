@@ -24,8 +24,8 @@ else
    export GOLANG_PKG_NAME=go$GOLANG_VERSION.linux-amd64.tar.gz
 fi
 
-GOLANG_DOWNLOAD_URL=http://olxkpcnfn.bkt.clouddn.com/$GOLANG_PKG_NAME
-#GOLANG_DOWNLOAD_URL=https://storage.googleapis.com/golang/$GOLANG_PKG_NAME
+#GOLANG_DOWNLOAD_URL=http://olxkpcnfn.bkt.clouddn.com/$GOLANG_PKG_NAME
+GOLANG_DOWNLOAD_URL=https://storage.googleapis.com/golang/$GOLANG_PKG_NAME
 
 if [ ! -f $GOLANG_PKG_NAME ]; then
     wget $GOLANG_DOWNLOAD_URL

@@ -29,4 +29,20 @@ func main() {
 	if args[0] == "buckets" {
 		listbuckets()
 	}
+
+	if args[0] == "stat" {
+		path := args[1]
+		stat(path)
+	}
+
+	if args[0] == "listdir" {
+		path := args[1]
+		listdir(path)
+	}
+
+	if args[0] == "listfiles" {
+		path := args[1]
+		listfiles(path)
+	}
+
 }
