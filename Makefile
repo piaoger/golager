@@ -59,6 +59,7 @@ build:
 	@${GOFMT} -s -w ${GOFILES}
 	@echo 'building lager tools ...'
 	@${GO} build -o build/bin/lager-cli ./src/lager-cli
+	@${GO} build -o build/bin/lager-s3 ./src/lager-cli.s3
 	@${GO} build -o build/bin/lager-oss ./src/lager-cli.oss
 	@${GO} build -o build/bin/lager-qiniu ./src/lager-cli.qiniu
 
