@@ -51,26 +51,26 @@ rm -rf $APP_CACHE_DIR/golang
 # -----------------------------------------
 
 
-echo "installing golang.com/x/net"
-cd $APP_CACHE_DIR
+# echo "installing golang.com/x/net"
+# cd $APP_CACHE_DIR
 
-NET_RELEASE_PACKAGE=release-branch.go1.8.zip
-NET_RELEASE_PACKAGE_NAME=net-release-branch.go1.8
+# NET_RELEASE_PACKAGE=release-branch.go1.8.zip
+# NET_RELEASE_PACKAGE_NAME=net-release-branch.go1.8
 
-NET_RELEASE_PACKAGE_DOWNLOAD_URL=https://github.com/golang/net/archive/$NET_RELEASE_PACKAGE
-if [ ! -f $NET_RELEASE_PACKAGE_NAME.zip ]; then
-    wget $NET_RELEASE_PACKAGE_DOWNLOAD_URL -O $NET_RELEASE_PACKAGE_NAME.zip
-fi
+# NET_RELEASE_PACKAGE_DOWNLOAD_URL=https://github.com/golang/net/archive/$NET_RELEASE_PACKAGE
+# if [ ! -f $NET_RELEASE_PACKAGE_NAME.zip ]; then
+#     wget $NET_RELEASE_PACKAGE_DOWNLOAD_URL -O $NET_RELEASE_PACKAGE_NAME.zip
+# fi
 
-rm -rf ${APP_ROOT}/vendor/src/golang.org/x/
-mkdir -p ${APP_ROOT}/vendor/src/golang.org/x/
-cp ${APP_CACHE_DIR}/$NET_RELEASE_PACKAGE_NAME.zip ${APP_ROOT}/vendor/src/golang.org/x/
+# rm -rf ${APP_ROOT}/vendor/src/golang.org/x/
+# mkdir -p ${APP_ROOT}/vendor/src/golang.org/x/
+# cp ${APP_CACHE_DIR}/$NET_RELEASE_PACKAGE_NAME.zip ${APP_ROOT}/vendor/src/golang.org/x/
 
-cd ${APP_ROOT}/vendor/src/golang.org/x/
-unzip -q $NET_RELEASE_PACKAGE_NAME.zip
+# cd ${APP_ROOT}/vendor/src/golang.org/x/
+# unzip -q $NET_RELEASE_PACKAGE_NAME.zip
 
-mv ${APP_ROOT}/vendor/src/golang.org/x/$NET_RELEASE_PACKAGE_NAME ${APP_ROOT}/vendor/src/golang.org/x/net
-rm $NET_RELEASE_PACKAGE_NAME.zip
+# mv ${APP_ROOT}/vendor/src/golang.org/x/$NET_RELEASE_PACKAGE_NAME ${APP_ROOT}/vendor/src/golang.org/x/net
+# rm $NET_RELEASE_PACKAGE_NAME.zip
 
 # -----------------------------------------
 # golang x/net

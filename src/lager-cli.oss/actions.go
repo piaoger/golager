@@ -2,11 +2,13 @@ package main
 
 import (
 	"../oss"
+	"fmt"
 )
 
 func listbuckets() {
 	oss.ConfigFromEnv()
-	oss.ListBuckets()
+	buckets := oss.ListBuckets()
+	fmt.Println(buckets)
 }
 
 func upload(from string, to string) {
@@ -21,7 +23,8 @@ func download(from string, to string) {
 
 func stat(path string) {
 	oss.ConfigFromEnv()
-	oss.Stat(path)
+	stat, _ := oss.Stat(path)
+	fmt.Println(stat)
 }
 
 func listdir(path string) {
@@ -31,5 +34,6 @@ func listdir(path string) {
 
 func listfiles(path string) {
 	oss.ConfigFromEnv()
-	oss.ListFiles(path)
+	files := oss.ListFiles(path, []string{})
+	fmt.Println(files)
 }

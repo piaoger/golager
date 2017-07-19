@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func bucketkey(address string) (string, string, error) {
@@ -58,4 +59,12 @@ func DownloadFromUrl(url string, fileName string) {
 	}
 
 	fmt.Println(n, "bytes downloaded.")
+}
+
+var sleepDuration = 1 * time.Millisecond
+
+func Sleep(unit int) {
+
+	duration := time.Duration(unit) * sleepDuration
+	time.Sleep(duration)
 }
