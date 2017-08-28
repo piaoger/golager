@@ -37,6 +37,9 @@ golager is datum lager(datastore) written in golang. It's really a headache to s
 
 - buckets
 - upload
+
+./build/bin/lager-oss upload README.md  /uyun-dev/temp/READ.md  "content-type:application/abc;cache-control:max-age=3600" "a:b;c:d"
+
 - download
 
 
@@ -59,7 +62,8 @@ QINIU_DOMAIN=<QINIU_DOMAIN>
 
 ## TODO
 
-1
+
+
 ## references
 
 qshell: qiniu command line tool  [link](https://github.com/qiniu/qshell)

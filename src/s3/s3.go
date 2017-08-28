@@ -93,7 +93,7 @@ func ListBuckets() []string {
 
 }
 
-func Upload(from string, to string, headers map[string]string) error {
+func Upload(from string, to string, headers map[string]string, metas map[string]string) error {
 
 	svc := newS3Service()
 

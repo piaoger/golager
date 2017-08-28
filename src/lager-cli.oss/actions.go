@@ -11,9 +11,9 @@ func listbuckets() {
 	fmt.Println(buckets)
 }
 
-func upload(from string, to string, headers map[string]string) {
+func upload(from string, to string, headers map[string]string, metas map[string]string) {
 	oss.ConfigFromEnv()
-	oss.Upload(from, to, headers)
+	oss.Upload(from, to, headers, metas)
 }
 
 func download(from string, to string) {

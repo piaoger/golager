@@ -21,18 +21,35 @@ func main() {
 		from := args[1]
 		to := args[2]
 
-		headerArg := args[3]
 		headers := map[string]string{}
-		parts := strings.Split(headerArg, ";")
-		for _, part := range parts {
-			fields := strings.Split(part, ":")
-			if len(fields) == 2 {
-				header := http.CanonicalHeaderKey(fields[0])
-				headers[header] = fields[1]
+		if len(args) >= 4 {
+			headerArg := args[3]
+			if headerArg != "" {
+				parts := strings.Split(headerArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						header := http.CanonicalHeaderKey(fields[0])
+						headers[header] = fields[1]
+					}
+				}
 			}
 		}
 
-		upload(from, to, headers)
+		metas := map[string]string{}
+		if len(args) >= 5 {
+			metaArg := args[4]
+			if metaArg != "" {
+				parts := strings.Split(metaArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						metas[fields[0]] = fields[1]
+					}
+				}
+			}
+		}
+		upload(from, to, headers, metas)
 	}
 
 	if args[0] == "download" {

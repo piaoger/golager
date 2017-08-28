@@ -18,7 +18,7 @@ import (
 // ContentMD5 is an option to set Content-MD5 header
 // Expires is an option to set Expires header
 
-func headersToOption(headers map[string]string) []oss.Option {
+func headersToOption(headers map[string]string, metas map[string]string) []oss.Option {
 	options := []oss.Option{}
 
 	for k, v := range headers {
@@ -39,6 +39,10 @@ func headersToOption(headers map[string]string) []oss.Option {
 		} else {
 			//options = append(options, oss.Meta(k, v))
 		}
+	}
+
+	for k, v := range metas {
+		options = append(options, oss.Meta(k, v))
 	}
 
 	return options
@@ -116,7 +120,7 @@ func listObjects(bucket_name string, key string, delimiter string, timeout int) 
 	return results
 }
 
-func Upload(from string, to string, headers map[string]string) error {
+func Upload(from string, to string, headers map[string]string, metas map[string]string) error {
 
 	client, err := newClient()
 	if err != nil {
@@ -136,7 +140,7 @@ func Upload(from string, to string, headers map[string]string) error {
 		return errors.New(msg)
 	}
 
-	options := headersToOption(headers)
+	options := headersToOption(headers, metas)
 	options = append(options, oss.ObjectACL(oss.ACLPublicRead))
 	err = bucket.PutObjectFromFile(key, from, options...)
 	if err != nil {
