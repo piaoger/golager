@@ -29,7 +29,8 @@ func stat(path string) {
 
 func listdir(path string) {
 	oss.ConfigFromEnv()
-	oss.ListDir(path)
+	dirs := oss.ListDir(path)
+	fmt.Println(dirs)
 }
 
 func listfiles(path string) {

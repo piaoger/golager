@@ -31,5 +31,5 @@ func listdir(path string) {
 
 func listfiles(path string) {
 	s3.ConfigFromEnv()
-	s3.ListFiles(path)
+	s3.ListFiles(path, []string{})
 }

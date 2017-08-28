@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	ymdhmszFmt = "2006-01-02 15:04:05-07"
+	ymdFmt     = "2006-01-02"
+)
+
 func TimeNow() string {
 	// UTC: "Etc/GMT"
 	// Shanghai: "Asia/Shanghai"
@@ -13,9 +18,10 @@ func TimeNow() string {
 	//     go/src/time/zoneinfo_abbrs_windows.go
 	loc, err := time.LoadLocation("Etc/GMT")
 	if err != nil {
-		fmt.Printf("util", "unable to get timelocation from string: %s", err)
+		//fmt.Printf("util", "unable to get timelocation from string: %s", err)
+		return ymdhmszFmt
 	}
-	return time.Now().In(loc).Format("2006-01-02 15:04:05-07")
+	return time.Now().In(loc).Format(ymdhmszFmt)
 }
 
 func DateStr() string {
@@ -27,10 +33,10 @@ func DateStr() string {
 	if err != nil {
 		fmt.Printf("util", "unable to get timelocation from string: %s", err)
 	}
-	return time.Now().In(loc).Format("2006-01-02")
+	return time.Now().In(loc).Format(ymdFmt)
 }
 
 func FormatTime(t time.Time) string {
 	loc, _ := time.LoadLocation("Etc/GMT")
-	return t.In(loc).Format("2006-01-02 15:04:05-07")
+	return t.In(loc).Format(ymdhmszFmt)
 }

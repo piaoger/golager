@@ -2,8 +2,6 @@ package s3
 
 import (
 	"../utils"
-	//"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -64,8 +62,7 @@ func listObjects(bucket string, prefix string, marker string, delimiter string) 
 
 		resp, err := svc.ListObjects(params)
 		if err != nil {
-			//fmt.Println(err.Error())
-			continue
+			break
 		}
 
 		s3prefix = *resp.Prefix
@@ -92,13 +89,11 @@ func ListBuckets() []string {
 
 	}
 
-	fmt.Println(buckets)
-
 	return buckets
 
 }
 
-func Upload(from string, to string) {
+func Upload(from string, to string) error {
 
 	svc := newS3Service()
 
@@ -106,8 +101,10 @@ func Upload(from string, to string) {
 
 	fd, err := os.Open(from)
 	if err != nil {
-		return
+		fd.Close()
+		return err
 	}
+
 	defer fd.Close()
 
 	params := &s3.PutObjectInput{
@@ -117,20 +114,11 @@ func Upload(from string, to string) {
 		ACL:    aws.String("public-read"),
 	}
 
-	resp, err := svc.PutObject(params)
-
-	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
-		return
-	}
-
-	// Pretty-print the response data.
-	fmt.Println(resp)
+	_, err = svc.PutObject(params)
+	return err
 }
 
-func Download(from string, to string) {
+func Download(from string, to string) error {
 	svc := newS3Service()
 
 	bucket_name, key, err := utils.ParseAddress(from)
@@ -142,14 +130,10 @@ func Download(from string, to string) {
 	resp, err := svc.GetObject(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		//fmt.Println(err.Error())
-		return
+		return err
 	}
 
-	getObjectToFile(resp, to)
-
+	return getObjectToFile(resp, to)
 }
 
 func Stat(path string) (map[string]interface{}, error) {
@@ -168,14 +152,14 @@ func Stat(path string) (map[string]interface{}, error) {
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
 		// Message from an error.
-		//fmt.Println(err.Error())
 		return result, err
 
 	} else {
 
 		result = map[string]interface{}{
-			"size":     *resp.ContentLength,
-			"modified": *resp.LastModified,
+			"size":         *resp.ContentLength,
+			"modified":     *resp.LastModified,
+			"content-type": *resp.ContentType,
 		}
 
 	}
@@ -183,18 +167,19 @@ func Stat(path string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func ListFiles(path string) []string {
+func ListFiles(path string, filters []string) []map[string]interface{} {
 
 	bucket_name, key, _ := utils.ParseAddress(path)
 
 	results := listObjects(bucket_name, key, "", "")
-	keys := []string{}
+	files := []map[string]interface{}{}
 
 	for i := 0; i < len(results); i += 1 {
 		lsRes := results[i]
 		for j := 0; j < len(lsRes.Contents); j += 1 {
 
-			ckey := *lsRes.Contents[j].Key
+			content := lsRes.Contents[j]
+			ckey := *content.Key
 
 			name := strings.Replace(ckey, key, "", -1)
 
@@ -203,11 +188,27 @@ func ListFiles(path string) []string {
 				//trace.Trace('name : ' + name + ' is a in subfolder');
 				continue
 			}
-			keys = append(keys, name)
+
+			wanted := len(filters) == 0
+			for fi := 0; fi < len(filters); fi += 1 {
+				if name == filters[fi] {
+					wanted = true
+					break
+				}
+			}
+
+			if wanted {
+				fileinfo := map[string]interface{}{
+					"name":     name,
+					"size":     *content.Size,
+					"modified": *content.LastModified,
+				}
+				files = append(files, fileinfo)
+			}
+
 		}
 	}
-	fmt.Println(keys)
-	return keys
+	return files
 }
 
 func ListDir(path string) []string {
