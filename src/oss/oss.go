@@ -20,12 +20,14 @@ import (
 
 func headersToOption(headers map[string]string, metas map[string]string) []oss.Option {
 	options := []oss.Option{}
-
 	for k, v := range headers {
 		if k == "Content-Type" {
 			options = append(options, oss.ContentType(v))
 		} else if k == "Content-Length" {
-			// options = append(options, oss.ContentLength(v))
+			cl, err := strconv.ParseInt(v, 10, 64)
+			if err == nil {
+				options = append(options, oss.ContentLength(cl))
+			}
 		} else if k == "Cache-Control" {
 			options = append(options, oss.CacheControl(v))
 		} else if k == "Content-Disposition" {
@@ -35,7 +37,10 @@ func headersToOption(headers map[string]string, metas map[string]string) []oss.O
 		} else if k == "Content-MD5" {
 			options = append(options, oss.ContentMD5(v))
 		} else if k == "Expires" {
-			//options = append(options, oss.Expires(v))
+			// exp, err := strconv.ParseInt(v, 10, 64)
+			// if err == nil {
+			// 	options = append(options, oss.Expires(exp))
+			// }
 		} else {
 			//options = append(options, oss.Meta(k, v))
 		}
@@ -51,6 +56,7 @@ func headersToOption(headers map[string]string, metas map[string]string) []oss.O
 func newClient() (*oss.Client, error) {
 	return oss.New(OSS_ENDPOINT, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET)
 }
+
 func parseTime(ossdate string) time.Time {
 	// date format
 	// https://golang.org/src/time/format.go
