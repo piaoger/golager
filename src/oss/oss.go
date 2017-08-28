@@ -10,6 +10,40 @@ import (
 	"time"
 )
 
+// ContentType is an option to set Content-Type header
+// ContentLength is an option to set Content-Length : ContentLength
+// CacheControl is an option to set Cache-Control header
+// ContentDisposition is an option to set Content-Disposition header
+// ContentEncoding is an option to set Content-Encoding header
+// ContentMD5 is an option to set Content-MD5 header
+// Expires is an option to set Expires header
+
+func headersToOption(headers map[string]string) []oss.Option {
+	options := []oss.Option{}
+
+	for k, v := range headers {
+		if k == "Content-Type" {
+			options = append(options, oss.ContentType(v))
+		} else if k == "Content-Length" {
+			// options = append(options, oss.ContentLength(v))
+		} else if k == "Cache-Control" {
+			options = append(options, oss.CacheControl(v))
+		} else if k == "Content-Disposition" {
+			options = append(options, oss.ContentDisposition(v))
+		} else if k == "Content-Encoding" {
+			options = append(options, oss.ContentEncoding(v))
+		} else if k == "Content-MD5" {
+			options = append(options, oss.ContentMD5(v))
+		} else if k == "Expires" {
+			//options = append(options, oss.Expires(v))
+		} else {
+			//options = append(options, oss.Meta(k, v))
+		}
+	}
+
+	return options
+}
+
 func newClient() (*oss.Client, error) {
 	return oss.New(OSS_ENDPOINT, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET)
 }
@@ -82,7 +116,7 @@ func listObjects(bucket_name string, key string, delimiter string, timeout int) 
 	return results
 }
 
-func Upload(from string, to string) error {
+func Upload(from string, to string, headers map[string]string) error {
 
 	client, err := newClient()
 	if err != nil {
@@ -102,7 +136,9 @@ func Upload(from string, to string) error {
 		return errors.New(msg)
 	}
 
-	err = bucket.PutObjectFromFile(key, from, oss.ObjectACL(oss.ACLPublicRead))
+	options := headersToOption(headers)
+	options = append(options, oss.ObjectACL(oss.ACLPublicRead))
+	err = bucket.PutObjectFromFile(key, from, options...)
 	if err != nil {
 		msg := fmt.Sprintf("PutObjectFromFile error : %s", err)
 		return errors.New(msg)
@@ -227,7 +263,6 @@ func ListFiles(path string, filters []string) []map[string]interface{} {
 				}
 				files = append(files, fileinfo)
 			}
-
 		}
 	}
 

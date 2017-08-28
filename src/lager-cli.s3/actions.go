@@ -9,9 +9,9 @@ func listbuckets() {
 	s3.ListBuckets()
 }
 
-func upload(from string, to string) {
+func upload(from string, to string, headers map[string]string) {
 	s3.ConfigFromEnv()
-	s3.Upload(from, to)
+	s3.Upload(from, to, headers)
 }
 
 func download(from string, to string) {

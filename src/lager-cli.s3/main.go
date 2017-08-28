@@ -17,7 +17,7 @@ func main() {
 	if args[0] == "upload" {
 		from := args[1]
 		to := args[2]
-		upload(from, to)
+		upload(from, to, map[string]string{})
 	}
 
 	if args[0] == "download" {

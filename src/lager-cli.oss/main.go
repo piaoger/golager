@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -13,11 +15,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	// headers="content-type:application/json;cache-conrol:max-age=3600"
 	args := flag.Args()
 	if args[0] == "upload" {
 		from := args[1]
 		to := args[2]
-		upload(from, to)
+
+		headerArg := args[3]
+		headers := map[string]string{}
+		parts := strings.Split(headerArg, ";")
+		for _, part := range parts {
+			fields := strings.Split(part, ":")
+			if len(fields) == 2 {
+				header := http.CanonicalHeaderKey(fields[0])
+				headers[header] = fields[1]
+			}
+		}
+
+		upload(from, to, headers)
 	}
 
 	if args[0] == "download" {
