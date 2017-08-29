@@ -308,3 +308,32 @@ func Download(from string, to string) error {
 	return nil
 
 }
+
+func SetObjectMeta(path string, headers map[string]string, metas map[string]string) error {
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("oss client creation error : %s", err)
+		return errors.New(msg)
+	}
+
+	bucket_name, key, err := utils.ParseAddress(path)
+	if err != nil {
+		msg := fmt.Sprintf("parse address error : %s", err)
+		return errors.New(msg)
+	}
+
+	bucket, err := client.Bucket(bucket_name)
+	if err != nil {
+		msg := fmt.Sprintf("bucket error : %s", err)
+		return errors.New(msg)
+	}
+
+	options := headersToOption(headers, metas)
+	err = bucket.SetObjectMeta(key, options...)
+	if err != nil {
+		msg := fmt.Sprintf("SetObjectMeta error : %s", err)
+		return errors.New(msg)
+	}
+
+	return nil
+}

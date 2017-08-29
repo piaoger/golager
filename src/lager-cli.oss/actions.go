@@ -38,3 +38,8 @@ func listfiles(path string) {
 	files := oss.ListFiles(path, []string{})
 	fmt.Println(files)
 }
+
+func setObjectMeta(path string, headers map[string]string, metas map[string]string) {
+	oss.ConfigFromEnv()
+	oss.SetObjectMeta(path, headers, metas)
+}

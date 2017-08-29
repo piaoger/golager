@@ -76,4 +76,39 @@ func main() {
 		path := args[1]
 		listfiles(path)
 	}
+
+	if args[0] == "setobjectmeta" {
+		path := args[1]
+
+		headers := map[string]string{}
+		if len(args) >= 3 {
+			headerArg := args[2]
+			if headerArg != "" {
+				parts := strings.Split(headerArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						header := http.CanonicalHeaderKey(fields[0])
+						headers[header] = fields[1]
+					}
+				}
+			}
+		}
+
+		metas := map[string]string{}
+		if len(args) >= 4 {
+			metaArg := args[3]
+			if metaArg != "" {
+				parts := strings.Split(metaArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						metas[fields[0]] = fields[1]
+					}
+				}
+			}
+		}
+		setObjectMeta(path, headers, metas)
+	}
+
 }
