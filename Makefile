@@ -74,10 +74,10 @@ test:
 makebundle:
 	@echo "build package ..."
 	@rm -rf ${THIS_FOLDER}/bundle && \
-	 mkdir -p ${THIS_FOLDER}/bundle/lager-${TODAY} && \
-	 cp -r ${THIS_FOLDER}/build/*  ${THIS_FOLDER}/bundle/lager-${TODAY} &&  \
+	 mkdir -p ${THIS_FOLDER}/bundle/lager-${OS}-${TIMESTAMP} && \
+	 cp -r ${THIS_FOLDER}/build/*  ${THIS_FOLDER}/bundle/lager-${OS}-${TIMESTAMP} &&  \
 	 cd ${THIS_FOLDER}/bundle && \
-	 zip -r lager-${TODAY}.zip lager-${TIMESTAMP}
+	 zip -r lager-${OS}-${TIMESTAMP}.zip lager-${OS}-${TIMESTAMP}
 
 godeps-update:
 	@echo 'update dependencies ...'
