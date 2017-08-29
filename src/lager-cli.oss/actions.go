@@ -13,12 +13,24 @@ func listbuckets() {
 
 func upload(from string, to string, headers map[string]string, metas map[string]string) {
 	oss.ConfigFromEnv()
-	oss.Upload(from, to, headers, metas)
+	err := oss.Upload(from, to, headers, metas)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("upload success")
+	}
+
 }
 
 func download(from string, to string) {
 	oss.ConfigFromEnv()
-	oss.Download(from, to)
+	err := oss.Download(from, to)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("download success")
+	}
 }
 
 func stat(path string) {
@@ -41,5 +53,10 @@ func listfiles(path string) {
 
 func setObjectMeta(path string, headers map[string]string, metas map[string]string) {
 	oss.ConfigFromEnv()
-	oss.SetObjectMeta(path, headers, metas)
+	err := oss.SetObjectMeta(path, headers, metas)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("set object meta success")
+	}
 }
