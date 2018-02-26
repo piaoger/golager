@@ -63,6 +63,10 @@ build:
 	@${GO} build -o build/bin/lager-oss ./src/lager-cli.oss
 	@${GO} build -o build/bin/lager-qiniu ./src/lager-cli.qiniu
 
+fmt:
+	@echo 'golang code auto formatting ...'
+	@${GOFMT} -s -w ${GOFILES}
+
 clean:
 	@echo 'clean up and refresh ...'
 	@rm -rf build
