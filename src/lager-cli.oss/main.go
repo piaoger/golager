@@ -52,6 +52,42 @@ func main() {
 		upload(from, to, headers, metas)
 	}
 
+	// headers="content-type:application/json;cache-conrol:max-age=3600"
+	if args[0] == "uploaddir" {
+		from := args[1]
+		to := args[2]
+
+		headers := map[string]string{}
+		if len(args) >= 4 {
+			headerArg := args[3]
+			if headerArg != "" {
+				parts := strings.Split(headerArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						header := http.CanonicalHeaderKey(fields[0])
+						headers[header] = fields[1]
+					}
+				}
+			}
+		}
+
+		metas := map[string]string{}
+		if len(args) >= 5 {
+			metaArg := args[4]
+			if metaArg != "" {
+				parts := strings.Split(metaArg, ";")
+				for _, part := range parts {
+					fields := strings.Split(part, ":")
+					if len(fields) == 2 {
+						metas[fields[0]] = fields[1]
+					}
+				}
+			}
+		}
+		uploaddir(from, to, headers, metas)
+	}
+
 	if args[0] == "download" {
 		from := args[1]
 		to := args[2]

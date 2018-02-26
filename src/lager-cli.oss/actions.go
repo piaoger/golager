@@ -23,6 +23,18 @@ func upload(from string, to string, headers map[string]string, metas map[string]
 
 }
 
+func uploaddir(from string, to string, headers map[string]string, metas map[string]string) {
+	oss.ConfigFromEnv()
+	err := oss.UploadDir(from, to, headers, metas)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("upload success")
+	}
+
+}
+
 func download(from string, to string) {
 	oss.ConfigFromEnv()
 	err := oss.Download(from, to)

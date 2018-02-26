@@ -119,6 +119,10 @@ func Upload(from string, to string, headers map[string]string, metas map[string]
 	return err
 }
 
+func UploadDir(from string, to string, headers map[string]string, metas map[string]string) error {
+	return errors.New("not impl")
+}
+
 func Download(from string, to string) error {
 	svc := newS3Service()
 

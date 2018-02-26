@@ -156,6 +156,50 @@ func Upload(from string, to string, headers map[string]string, metas map[string]
 	return nil
 }
 
+func UploadDir(from string, to string, headers map[string]string, metas map[string]string) error {
+
+	exists, err := utils.DirExists(from)
+
+	if !exists || err != nil {
+		msg := fmt.Sprintf("from directory does not exist: %s", from)
+		return errors.New(msg)
+	}
+
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("oss client creation error : %s", err)
+		return errors.New(msg)
+	}
+
+	bucket_name, key, err := utils.ParseAddress(to)
+	if err != nil {
+		msg := fmt.Sprintf("parse address error : %s", err)
+		return errors.New(msg)
+	}
+
+	bucket, err := client.Bucket(bucket_name)
+	if err != nil {
+		msg := fmt.Sprintf("bucket error : %s", err)
+		return errors.New(msg)
+	}
+
+	collected := map[string]string{}
+	utils.CollectFiles(from, key, false, collected)
+
+	options := headersToOption(headers, metas)
+	options = append(options, oss.ObjectACL(oss.ACLPublicRead))
+
+	for k, v := range collected {
+		err = bucket.PutObjectFromFile(v, k, options...)
+		if err != nil {
+			msg := fmt.Sprintf("PutObjectFromFile error in uploading directory(%s): %s", from, err)
+			return errors.New(msg)
+		}
+	}
+
+	return nil
+}
+
 func Stat(path string) (map[string]interface{}, error) {
 
 	var result map[string]interface{}
