@@ -2,6 +2,7 @@ package s3
 
 import (
 	"../utils"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -229,4 +230,8 @@ func ListDir(path string) []string {
 	}
 
 	return keys
+}
+
+func SetObjectMeta(path string, headers map[string]string, metas map[string]string) error {
+	return errors.New("not impl")
 }

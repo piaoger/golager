@@ -188,7 +188,12 @@ func Stat(path string) (map[string]interface{}, error) {
 		return result, err
 	}
 
-	size, _ := strconv.Atoi(props["Content-Length"][0])
+	contentLength := props["Content-Length"][0]
+	size, err := strconv.ParseInt(contentLength, 10, 64)
+	if err != nil {
+		size = 0
+	}
+
 	modified := parseTime(props["Last-Modified"][0])
 	contentType := props["Content-Type"][0]
 
