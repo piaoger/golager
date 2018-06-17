@@ -18,6 +18,11 @@ func download(from string, to string) {
 	qiniu.Download(from, to)
 }
 
+func copyObject(from string, to string) {
+	qiniu.ConfigFromEnv()
+	qiniu.CopyObject(from, to)
+}
+
 func stat(path string) {
 	qiniu.ConfigFromEnv()
 	qiniu.Stat(path)

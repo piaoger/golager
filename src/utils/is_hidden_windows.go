@@ -16,7 +16,7 @@ func IsHidden(fileName string) bool {
 		return true
 	}
 
-	p, e := syscall.UTF16PtrFromString(f.FileName())
+	p, e := syscall.UTF16PtrFromString(fileName)
 	if e != nil {
 		return false
 	}

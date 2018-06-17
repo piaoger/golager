@@ -26,6 +26,12 @@ func main() {
 		download(from, to)
 	}
 
+	if args[0] == "copyobject" {
+		from := args[1]
+		to := args[2]
+		copyObject(from, to)
+	}
+
 	if args[0] == "buckets" {
 		listbuckets()
 	}

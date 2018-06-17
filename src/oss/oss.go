@@ -358,6 +358,42 @@ func Download(from string, to string) error {
 
 }
 
+func CopyObject(from string, to string) error {
+
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("oss client creation error : %s", err)
+		return errors.New(msg)
+	}
+
+	from_bucket_name, fromkey, err := utils.ParseAddress(from)
+	if err != nil {
+		msg := fmt.Sprintf("parse from address error : %s", err)
+		return errors.New(msg)
+	}
+
+	frombucket, err := client.Bucket(from_bucket_name)
+	if err != nil {
+		msg := fmt.Sprintf("from bucket error : %s", err)
+		return errors.New(msg)
+	}
+
+	to_bucket_name, tokey, err := utils.ParseAddress(to)
+	if err != nil {
+		msg := fmt.Sprintf("parse to address error : %s", err)
+		return errors.New(msg)
+	}
+
+	_, err = frombucket.CopyObjectTo(to_bucket_name, tokey, fromkey)
+	if err != nil {
+		msg := fmt.Sprintf("CopyObjectTo error : %s", err)
+		return errors.New(msg)
+	}
+
+	return nil
+
+}
+
 func SetObjectMeta(path string, headers map[string]string, metas map[string]string) error {
 	client, err := newClient()
 	if err != nil {

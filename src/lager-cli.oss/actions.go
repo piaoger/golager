@@ -45,6 +45,16 @@ func download(from string, to string) {
 	}
 }
 
+func copyObject(from string, to string) {
+	oss.ConfigFromEnv()
+	err := oss.CopyObject(from, to)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("copy success")
+	}
+}
+
 func stat(path string) {
 	oss.ConfigFromEnv()
 	stat, _ := oss.Stat(path)

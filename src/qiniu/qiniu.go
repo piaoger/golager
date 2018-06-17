@@ -109,6 +109,10 @@ func Download(from string, to string) {
 	utils.DownloadFromUrl(url, to)
 }
 
+func CopyObject(from string, to string) {
+	panic("not impl")
+}
+
 func Stat(path string) (map[string]interface{}, error) {
 	conf.ACCESS_KEY = QINIU_ACCESS_KEY
 	conf.SECRET_KEY = QINIU_SECRET_KEY

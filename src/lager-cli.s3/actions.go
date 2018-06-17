@@ -31,6 +31,16 @@ func download(from string, to string) {
 	}
 }
 
+func copyObject(from string, to string) {
+	s3.ConfigFromEnv()
+	err := s3.CopyObject(from, to)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("download success")
+	}
+}
+
 func stat(path string) {
 	s3.ConfigFromEnv()
 	stat, _ := s3.Stat(path)
