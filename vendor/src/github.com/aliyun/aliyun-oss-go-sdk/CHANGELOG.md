@@ -1,5 +1,48 @@
 # ChangeLog - Aliyun OSS SDK for Go
 
+## 版本号：1.9.0 日期：2018-06-15
+### 变更内容
+ - 变更：国际化
+
+## 版本号：1.8.0 日期：2017-12-12
+### 变更内容
+ - 变更：空闲链接关闭时间调整为50秒
+ - 修复：修复临时账号使用SignURL的问题
+
+## 版本号：1.7.0 日期：2017-09-25
+### 变更内容
+ - 增加：DownloadFile支持CRC校验
+ - 增加：STS测试用例
+
+## 版本号：1.6.0 日期：2017-09-01
+### 变更内容
+ - 修复：URL中特殊字符的编码问题
+ - 变更：不再支持Golang 1.4
+ 
+## 版本号：1.5.1 日期：2017-08-04
+### 变更内容
+ - 修复：SignURL中Key编码的问题
+ - 修复：DownloadFile下载完成后rename失败的问题
+ 
+## 版本号：1.5.0 日期：2017-07-25
+### 变更内容
+ - 增加：支持生成URL签名
+ - 增加：GetObject支持ResponseContentType等选项
+ - 修复：DownloadFile去除分片小于5GB的限制
+ - 修复：AppendObject在appendPosition不正确时发生panic
+
+## 版本号：1.4.0 日期：2017-05-23
+### 变更内容
+ - 增加：支持符号链接symlink
+ - 增加：支持RestoreObject
+ - 增加：CreateBucket支持StorageClass
+ - 增加：支持范围读NormalizedRange
+ - 修复：IsObjectExist使用GetObjectMeta实现
+
+## 版本号：1.3.0 日期：2017-01-13
+### 变更内容
+ - 增加：上传下载支持进度条功能
+
 ## 版本号：1.2.3 日期：2016-12-28
 ### 变更内容
  - 修复：每次请求使用一个http.Client修改为共用http.Client
@@ -15,20 +58,20 @@
 
 ## 版本号：1.2.0 日期：2016-10-18
 ### 变更内容
- - 支持CRC64校验
- - 修复计算MD5占用内存大的问题
- - 修复CopyObject时Object名称没有URL编码的问题
- - 支持指定Useragent
+ - 增加：支持CRC64校验
+ - 增加：支持指定Useragent
+ - 修复：计算MD5占用内存大的问题
+ - 修复：CopyObject时Object名称没有URL编码的问题
 
 ## 版本号：1.1.0 日期：2016-08-09
 ### 变更内容
- - 支持代理服务器
+ - 增加：支持代理服务器
 
 ## 版本号：1.0.0 日期：2016-06-24
 ### 变更内容
- - 增加断点分片复制接口Bucket.CopyFile
- - 增加Bucket间复制接口Bucket.CopyObjectTo、Bucket.CopyObjectFrom
- - 增加Client.GetBucketInfo接口
- - Bucket.UploadPartCopy支持Bucket间复制
- - 修复断点上传、断点下载出错后，协程不退出的Bug
- - 去除接口Bucket.CopyObjectToBucket
+ - 增加：断点分片复制接口Bucket.CopyFile
+ - 增加：Bucket间复制接口Bucket.CopyObjectTo、Bucket.CopyObjectFrom
+ - 增加：Client.GetBucketInfo接口
+ - 增加：Bucket.UploadPartCopy支持Bucket间复制
+ - 修复：断点上传、断点下载出错后，协程不退出的Bug
+ - 删除：接口Bucket.CopyObjectToBucket

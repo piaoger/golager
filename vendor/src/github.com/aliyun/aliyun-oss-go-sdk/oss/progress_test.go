@@ -20,7 +20,7 @@ type OssProgressSuite struct {
 
 var _ = Suite(&OssProgressSuite{})
 
-// Run once when the suite starts running
+// SetUpSuite runs once when the suite starts running
 func (s *OssProgressSuite) SetUpSuite(c *C) {
 	client, err := New(endpoint, accessID, accessKey)
 	c.Assert(err, IsNil)
@@ -36,9 +36,9 @@ func (s *OssProgressSuite) SetUpSuite(c *C) {
 	testLogger.Println("test progress started")
 }
 
-// Run before each test or benchmark starts running
+// TearDownSuite runs before each test or benchmark starts running
 func (s *OssProgressSuite) TearDownSuite(c *C) {
-	// Delete Multipart
+	// Abort multipart uploads
 	lmu, err := s.bucket.ListMultipartUploads()
 	c.Assert(err, IsNil)
 
@@ -48,7 +48,7 @@ func (s *OssProgressSuite) TearDownSuite(c *C) {
 		c.Assert(err, IsNil)
 	}
 
-	// Delete Objects
+	// Delete objects
 	lor, err := s.bucket.ListObjects()
 	c.Assert(err, IsNil)
 
@@ -60,7 +60,7 @@ func (s *OssProgressSuite) TearDownSuite(c *C) {
 	testLogger.Println("test progress completed")
 }
 
-// Run after each test or benchmark runs
+// SetUpTest runs after each test or benchmark runs
 func (s *OssProgressSuite) SetUpTest(c *C) {
 	err := removeTempFiles("../oss", ".jpg")
 	c.Assert(err, IsNil)
@@ -72,7 +72,7 @@ func (s *OssProgressSuite) SetUpTest(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// Run once after all tests or benchmarks have finished running
+// TearDownTest runs once after all tests or benchmarks have finished running
 func (s *OssProgressSuite) TearDownTest(c *C) {
 	err := removeTempFiles("../oss", ".jpg")
 	c.Assert(err, IsNil)
@@ -84,11 +84,11 @@ func (s *OssProgressSuite) TearDownTest(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// OssProgressListener progress listener
+// OssProgressListener is the progress listener
 type OssProgressListener struct {
 }
 
-// ProgressChanged handle progress event
+// ProgressChanged handles progress event
 func (listener *OssProgressListener) ProgressChanged(event *ProgressEvent) {
 	switch event.EventType {
 	case TransferStartedEvent:
@@ -145,11 +145,80 @@ func (s *OssProgressSuite) TestPutObject(c *C) {
 	testLogger.Println("OssProgressSuite.TestPutObject")
 }
 
+// TestSignURL
+func (s *OssProgressSuite) TestSignURL(c *C) {
+	objectName := objectNamePrefix + randStr(5)
+	filePath := randLowStr(10)
+	content := randStr(20)
+	createFile(filePath, content, c)
+
+	// Sign URL for put
+	str, err := s.bucket.SignURL(objectName, HTTPPut, 60, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+	c.Assert(strings.Contains(str, HTTPParamExpires+"="), Equals, true)
+	c.Assert(strings.Contains(str, HTTPParamAccessKeyID+"="), Equals, true)
+	c.Assert(strings.Contains(str, HTTPParamSignature+"="), Equals, true)
+
+	// Put object with URL
+	fd, err := os.Open(filePath)
+	c.Assert(err, IsNil)
+	defer fd.Close()
+
+	err = s.bucket.PutObjectWithURL(str, fd, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+
+	// Put object from file with URL
+	err = s.bucket.PutObjectFromFileWithURL(str, filePath, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+
+	// DoPutObject
+	fd, err = os.Open(filePath)
+	c.Assert(err, IsNil)
+	defer fd.Close()
+
+	options := []Option{Progress(&OssProgressListener{})}
+	_, err = s.bucket.DoPutObjectWithURL(str, fd, options)
+	c.Assert(err, IsNil)
+
+	// Sign URL for get
+	str, err = s.bucket.SignURL(objectName, HTTPGet, 60, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+	c.Assert(strings.Contains(str, HTTPParamExpires+"="), Equals, true)
+	c.Assert(strings.Contains(str, HTTPParamAccessKeyID+"="), Equals, true)
+	c.Assert(strings.Contains(str, HTTPParamSignature+"="), Equals, true)
+
+	// Get object with URL
+	body, err := s.bucket.GetObjectWithURL(str, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+	str, err = readBody(body)
+	c.Assert(err, IsNil)
+	c.Assert(str, Equals, content)
+
+	// Get object to file with URL
+	str, err = s.bucket.SignURL(objectName, HTTPGet, 10, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+
+	newFile := randStr(10)
+	err = s.bucket.GetObjectToFileWithURL(str, newFile, Progress(&OssProgressListener{}))
+	c.Assert(err, IsNil)
+	eq, err := compareFiles(filePath, newFile)
+	c.Assert(err, IsNil)
+	c.Assert(eq, Equals, true)
+
+	os.Remove(filePath)
+	os.Remove(newFile)
+
+	err = s.bucket.DeleteObject(objectName)
+	c.Assert(err, IsNil)
+
+	testLogger.Println("OssProgressSuite.TestSignURL")
+}
+
 func (s *OssProgressSuite) TestPutObjectNegative(c *C) {
 	objectName := objectNamePrefix + "tpon.html"
 	localFile := "../sample/The Go Programming Language.html"
 
-	// invalid endpoint
+	// Invalid endpoint
 	client, err := New("http://oss-cn-taikang.aliyuncs.com", accessID, accessKey)
 	c.Assert(err, IsNil)
 
@@ -324,7 +393,7 @@ func (s *OssProgressSuite) TestGetObjectNegative(c *C) {
 
 	//time.Sleep(70 * time.Second) TODO
 
-	// read should fail
+	// Read should fail
 	for err == nil {
 		n, err = body.Read(buf)
 		n += n
@@ -355,7 +424,7 @@ func (s *OssProgressSuite) TestDownloadFile(c *C) {
 	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
 	newFile := "down-new-file-progress-2.jpg"
 
-	// upload
+	// Upload
 	err := s.bucket.UploadFile(objectName, fileName, 100*1024, Routines(3))
 	c.Assert(err, IsNil)
 
@@ -377,7 +446,7 @@ func (s *OssProgressSuite) TestCopyFile(c *C) {
 	destObjectName := srcObjectName + "-copy"
 	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
 
-	// upload
+	// Upload
 	err := s.bucket.UploadFile(srcObjectName, fileName, 100*1024, Routines(3))
 	c.Assert(err, IsNil)
 

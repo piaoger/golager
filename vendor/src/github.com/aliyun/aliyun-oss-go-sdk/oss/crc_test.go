@@ -6,6 +6,7 @@ import (
 	"hash/crc64"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -20,7 +21,7 @@ type OssCrcSuite struct {
 
 var _ = Suite(&OssCrcSuite{})
 
-// Run once when the suite starts running
+// SetUpSuite runs once when the suite starts running
 func (s *OssCrcSuite) SetUpSuite(c *C) {
 	client, err := New(endpoint, accessID, accessKey)
 	c.Assert(err, IsNil)
@@ -36,9 +37,9 @@ func (s *OssCrcSuite) SetUpSuite(c *C) {
 	testLogger.Println("test crc started")
 }
 
-// Run before each test or benchmark starts running
+// TearDownSuite runs before each test or benchmark starts running
 func (s *OssCrcSuite) TearDownSuite(c *C) {
-	// Delete Part
+	// Delete part
 	lmur, err := s.bucket.ListMultipartUploads()
 	c.Assert(err, IsNil)
 
@@ -49,7 +50,7 @@ func (s *OssCrcSuite) TearDownSuite(c *C) {
 		c.Assert(err, IsNil)
 	}
 
-	// Delete Objects
+	// Delete objects
 	lor, err := s.bucket.ListObjects()
 	c.Assert(err, IsNil)
 
@@ -61,19 +62,19 @@ func (s *OssCrcSuite) TearDownSuite(c *C) {
 	testLogger.Println("test crc completed")
 }
 
-// Run after each test or benchmark runs
+// SetUpTest runs after each test or benchmark runs
 func (s *OssCrcSuite) SetUpTest(c *C) {
 	err := removeTempFiles("../oss", ".jpg")
 	c.Assert(err, IsNil)
 }
 
-// Run once after all tests or benchmarks have finished running
+// TearDownTest runs once after all tests or benchmarks have finished running
 func (s *OssCrcSuite) TearDownTest(c *C) {
 	err := removeTempFiles("../oss", ".jpg")
 	c.Assert(err, IsNil)
 }
 
-// TestCRCGolden 测试OSS实现的CRC64
+// TestCRCGolden tests OSS's CRC64
 func (s *OssCrcSuite) TestCRCGolden(c *C) {
 	type crcTest struct {
 		out uint64
@@ -126,7 +127,84 @@ func (s *OssCrcSuite) TestCRCGolden(c *C) {
 	}
 }
 
-// TestEnableCRCAndMD5 开启MD5和CRC校验
+// testCRC64Combine tests CRC64 on vector[0..pos] which should have CRC64 crc.
+// Also test CRC64Combine on vector[] split in two.
+func testCRC64Combine(c *C, str string, pos int, crc uint64) {
+	tabECMA := crc64.MakeTable(crc64.ECMA)
+
+	// Test CRC64
+	hash := crc64.New(tabECMA)
+	io.WriteString(hash, str)
+	crc1 := hash.Sum64()
+	c.Assert(crc1, Equals, crc)
+
+	// Test CRC64 combine
+	hash = crc64.New(tabECMA)
+	io.WriteString(hash, str[0:pos])
+	crc1 = hash.Sum64()
+
+	hash = crc64.New(tabECMA)
+	io.WriteString(hash, str[pos:len(str)])
+	crc2 := hash.Sum64()
+
+	crc1 = CRC64Combine(crc1, crc2, uint64(len(str)-pos))
+	c.Assert(crc1, Equals, crc)
+}
+
+// TestCRCCombine tests CRC64Combine
+func (s *OssCrcSuite) TestCRCCombine(c *C) {
+	str := "123456789"
+	testCRC64Combine(c, str, (len(str)+1)>>1, 0x995DC9BBDF1939FA)
+
+	str = "This is a test of the emergency broadcast system."
+	testCRC64Combine(c, str, (len(str)+1)>>1, 0x27DB187FC15BBC72)
+}
+
+// TestCRCRepeatedCombine tests CRC64Combine
+func (s *OssCrcSuite) TestCRCRepeatedCombine(c *C) {
+	tab := crc64.MakeTable(crc64.ECMA)
+	str := "Even if I could be Shakespeare, I think I should still choose to be Faraday. - A. Huxley"
+
+	for i := 0; i <= len(str); i++ {
+		hash := crc64.New(tab)
+		io.WriteString(hash, string(str[0:i]))
+		prev := hash.Sum64()
+
+		hash = crc64.New(tab)
+		io.WriteString(hash, string(str[i:len(str)]))
+		post := hash.Sum64()
+
+		crc := CRC64Combine(prev, post, uint64(len(str)-i))
+		testLogger.Println("TestCRCRepeatedCombine:", prev, post, crc, i, len(str))
+		c.Assert(crc == 0x7AD25FAFA1710407, Equals, true)
+	}
+}
+
+// TestCRCRandomCombine tests CRC64Combine
+func (s *OssCrcSuite) TestCRCRandomCombine(c *C) {
+	tab := crc64.MakeTable(crc64.ECMA)
+	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
+
+	body, err := ioutil.ReadFile(fileName)
+	c.Assert(err, IsNil)
+
+	for i := 0; i < 10; i++ {
+		fileParts, err := SplitFileByPartNum(fileName, 1+rand.Intn(9999))
+		c.Assert(err, IsNil)
+
+		var crc uint64
+		for _, part := range fileParts {
+			calc := NewCRC(tab, 0)
+			calc.Write(body[part.Offset : part.Offset+part.Size])
+			crc = CRC64Combine(crc, calc.Sum64(), (uint64)(part.Size))
+		}
+
+		testLogger.Println("TestCRCRandomCombine:", crc, i, fileParts)
+		c.Assert(crc == 0x2B612D24FFF64222, Equals, true)
+	}
+}
+
+// TestEnableCRCAndMD5 tests MD5 and CRC check
 func (s *OssCrcSuite) TestEnableCRCAndMD5(c *C) {
 	objectName := objectNamePrefix + "tecam"
 	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
@@ -196,7 +274,7 @@ func (s *OssCrcSuite) TestEnableCRCAndMD5(c *C) {
 	err = s.bucket.DeleteObject(objectName)
 	c.Assert(err, IsNil)
 
-	//	MultipartUpload
+	// MultipartUpload
 	chunks, err := SplitFileByPartSize(fileName, 100*1024)
 	imurUpload, err := bucket.InitiateMultipartUpload(objectName)
 	c.Assert(err, IsNil)
@@ -223,7 +301,7 @@ func (s *OssCrcSuite) TestEnableCRCAndMD5(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// TestDisableCRCAndMD5 关闭MD5和CRC校验
+// TestDisableCRCAndMD5 disables MD5 and CRC
 func (s *OssCrcSuite) TestDisableCRCAndMD5(c *C) {
 	objectName := objectNamePrefix + "tdcam"
 	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
@@ -292,7 +370,7 @@ func (s *OssCrcSuite) TestDisableCRCAndMD5(c *C) {
 	err = s.bucket.DeleteObject(objectName)
 	c.Assert(err, IsNil)
 
-	//	MultipartUpload
+	// MultipartUpload
 	chunks, err := SplitFileByPartSize(fileName, 100*1024)
 	imurUpload, err := bucket.InitiateMultipartUpload(objectName)
 	c.Assert(err, IsNil)
@@ -319,7 +397,7 @@ func (s *OssCrcSuite) TestDisableCRCAndMD5(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// TestSpecifyContentMD5 指定MD5
+// TestSpecifyContentMD5 specifies MD5
 func (s *OssCrcSuite) TestSpecifyContentMD5(c *C) {
 	objectName := objectNamePrefix + "tdcam"
 	fileName := "../sample/BingWallpaper-2015-11-07.jpg"
@@ -367,7 +445,7 @@ func (s *OssCrcSuite) TestSpecifyContentMD5(c *C) {
 	err = s.bucket.DeleteObject(objectName)
 	c.Assert(err, IsNil)
 
-	//	MultipartUpload
+	// MultipartUpload
 	imurUpload, err := s.bucket.InitiateMultipartUpload(objectName)
 	c.Assert(err, IsNil)
 
@@ -384,7 +462,7 @@ func (s *OssCrcSuite) TestSpecifyContentMD5(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// TestCopyObjectToOrFromNegative
+// TestAppendObjectNegative
 func (s *OssCrcSuite) TestAppendObjectNegative(c *C) {
 	objectName := objectNamePrefix + "taoncrc"
 	objectValue := "空山不见人，但闻人语响。返影入深林，复照青苔上。"
