@@ -109,7 +109,7 @@ func Download(from string, to string) {
 	utils.DownloadFromUrl(url, to)
 }
 
-func CopyObject(from string, to string) {
+func CopyObject(from string, to string) error {
 	panic("not impl")
 }
 

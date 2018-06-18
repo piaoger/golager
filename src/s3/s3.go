@@ -144,7 +144,6 @@ func Download(from string, to string) error {
 func CopyObject(from string, to string) error {
 
 	panic("not impl")
-	return errors.New("not impl")
 }
 
 func Stat(path string) (map[string]interface{}, error) {
