@@ -82,3 +82,13 @@ func setObjectMeta(path string, headers map[string]string, metas map[string]stri
 		fmt.Println("set object meta success")
 	}
 }
+
+func signUrl(path string, method string) {
+	oss.ConfigFromEnv()
+	signedurl, err := oss.SignUrl(path, method, 7200)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println(signedurl)
+	}
+}

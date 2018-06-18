@@ -422,3 +422,39 @@ func SetObjectMeta(path string, headers map[string]string, metas map[string]stri
 
 	return nil
 }
+
+func SignUrl(path, method string, expiredInSec int64) (string, error) {
+
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("oss client creation error : %s", err)
+		return "", errors.New(msg)
+	}
+
+	bucket_name, key, err := utils.ParseAddress(path)
+	if err != nil {
+		msg := fmt.Sprintf("parse address error : %s", err)
+		return "", errors.New(msg)
+	}
+
+	bucket, err := client.Bucket(bucket_name)
+	if err != nil {
+		msg := fmt.Sprintf("bucket error : %s", err)
+		return "", errors.New(msg)
+	}
+
+	m := strings.ToUpper(string(method))
+
+	if "GET" != m && "PUT" != m && "HEAD" != m && "POST" != m && "DELETE" != m {
+		msg := fmt.Sprintf("invalid method : %s", m)
+		return "", errors.New(msg)
+	}
+
+	signedurl, err := bucket.SignURL(key, oss.HTTPMethod(m), expiredInSec)
+	if err != nil {
+		msg := fmt.Sprintf("sign url error : %s", err)
+		return "", errors.New(msg)
+	}
+
+	return signedurl, nil
+}

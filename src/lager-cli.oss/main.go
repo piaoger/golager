@@ -153,4 +153,10 @@ func main() {
 		setObjectMeta(path, headers, metas)
 	}
 
+	if args[0] == "signurl" {
+		path := args[1]
+		method := args[2]
+		signUrl(path, method)
+	}
+
 }
