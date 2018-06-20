@@ -154,8 +154,8 @@ func main() {
 	}
 
 	if args[0] == "signurl" {
-		path := args[1]
-		method := args[2]
+		method := args[1]
+		path := args[2]
 		signUrl(path, method)
 	}
 
