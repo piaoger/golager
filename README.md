@@ -63,6 +63,11 @@ QINIU_DOMAIN=<QINIU_DOMAIN>
 ## TODO
 
 
+## presigned url
+
+aws: http://www.cheynewallace.com/uploading-to-s3-with-angularjs-and-pre-signed-urls/
+
+
 
 ## references
 

@@ -17,19 +17,24 @@ cd $APP_CACHE_DIR
 echo "installing golang"
 rm -rf $APP_CACHE_DIR/golang
 
-GOLANG_VERSION=1.8
+# once network is better, let's move to next version 1.10.3
+GOLANG_VERSION=1.10.3
 if [ "$OS" = "Darwin" ]; then
    export GOLANG_PKG_NAME=go$GOLANG_VERSION.darwin-amd64.tar.gz
+   export GOLANG_ROOT_NAME=go$GOLANG_VERSION.darwin-amd64
 else
    export GOLANG_PKG_NAME=go$GOLANG_VERSION.linux-amd64.tar.gz
+   export GOLANG_ROOT_NAME=go$GOLANG_VERSION.linux-amd64
 fi
 
-#GOLANG_DOWNLOAD_URL=http://olxkpcnfn.bkt.clouddn.com/$GOLANG_PKG_NAME
-GOLANG_DOWNLOAD_URL=https://storage.googleapis.com/golang/$GOLANG_PKG_NAME
+# Mirror in China
+GOLANG_DOWNLOAD_URL=https://dl.google.com/go/$GOLANG_PKG_NAME
+#GOLANG_DOWNLOAD_URL=https://storage.googleapis.com/golang/$GOLANG_PKG_NAME
 
 if [ ! -f $GOLANG_PKG_NAME ]; then
     wget $GOLANG_DOWNLOAD_URL
 fi
+
 
 tar -xf $GOLANG_PKG_NAME
 
