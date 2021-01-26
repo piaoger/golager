@@ -15,7 +15,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// headers="content-type:application/json;cache-control:max-age=3600"
+	// headers="content-type:application/json;cache-conrol:max-age=3600"
 	args := flag.Args()
 	if args[0] == "upload" {
 		from := args[1]
@@ -52,7 +52,7 @@ func main() {
 		upload(from, to, headers, metas)
 	}
 
-	// headers="content-type:application/json;cache-control:max-age=3600"
+	// headers="content-type:application/json;cache-conrol:max-age=3600"
 	if args[0] == "uploaddir" {
 		from := args[1]
 		to := args[2]

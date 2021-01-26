@@ -2,6 +2,7 @@ package main
 
 import (
 	"../oss"
+	"encoding/json"
 	"fmt"
 )
 
@@ -64,7 +65,9 @@ func stat(path string) {
 func listdir(path string) {
 	oss.ConfigFromEnv()
 	dirs := oss.ListDir(path)
-	fmt.Println(dirs)
+
+	desc, _ := json.Marshal(dirs)
+	fmt.Println(string(desc))
 }
 
 func listfiles(path string) {

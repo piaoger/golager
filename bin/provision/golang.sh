@@ -18,7 +18,7 @@ echo "installing golang"
 rm -rf $APP_CACHE_DIR/golang
 
 # once network is better, let's move to next version 1.10.3
-GOLANG_VERSION=1.10.3
+GOLANG_VERSION=1.15.5
 if [ "$OS" = "Darwin" ]; then
    export GOLANG_PKG_NAME=go$GOLANG_VERSION.darwin-amd64.tar.gz
    export GOLANG_ROOT_NAME=go$GOLANG_VERSION.darwin-amd64

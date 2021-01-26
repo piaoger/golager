@@ -26,8 +26,8 @@ GO_DEPS := \
 	"github.com/aws/aws-sdk-go" \
 	"github.com/aliyun/aliyun-oss-go-sdk/oss" \
 	"qiniupkg.com/api.v7" \
-	"github.com/qiniu/api.v6"
-
+	"github.com/qiniu/api.v6" \
+	"github.com/piaoger/obs-sdk-go"
 .PHONY: build
 
 
@@ -62,6 +62,11 @@ build:
 	@${GO} build -o build/bin/lager-s3 ./src/lager-cli.s3
 	@${GO} build -o build/bin/lager-oss ./src/lager-cli.oss
 	@${GO} build -o build/bin/lager-qiniu ./src/lager-cli.qiniu
+	@${GO} build -o build/bin/lager-obs ./src/lager-cli.obs
+
+build-obs:
+	@echo 'building obs tools ...'
+	@${GO} build -o build/bin/lager-obs ./src/lager-cli.obs
 
 fmt:
 	@echo 'golang code auto formatting ...'
