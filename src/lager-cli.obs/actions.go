@@ -2,14 +2,14 @@ package main
 
 import (
 	"../obs"
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 )
 
 func listbuckets() {
-	// obs.ConfigFromEnv()
-	// buckets := obs.ListBuckets()
-	// fmt.Println(buckets)
+	obs.ConfigFromEnv()
+	buckets := obs.ListBuckets()
+	fmt.Println(buckets)
 }
 
 func upload(from string, to string, headers map[string]string, metas map[string]string) {
@@ -45,13 +45,13 @@ func download(from string, to string) {
 }
 
 func copyObject(from string, to string) {
-	// obs.ConfigFromEnv()
-	// err := obs.CopyObject(from, to)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// } else {
-	// 	fmt.Println("copy success")
-	// }
+	obs.ConfigFromEnv()
+	err := obs.CopyObject(from, to)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("copy success")
+	}
 }
 
 func stat(path string) {
@@ -61,27 +61,27 @@ func stat(path string) {
 }
 
 func listdir(path string) {
-	// obs.ConfigFromEnv()
-	// dirs := obs.ListDir(path)
+	obs.ConfigFromEnv()
+	dirs := obs.ListDir(path)
 
-	// desc, _ := json.Marshal(dirs)
-	// fmt.Println(string(desc))
+	desc, _ := json.Marshal(dirs)
+	fmt.Println(string(desc))
 }
 
 func listfiles(path string) {
-	// obs.ConfigFromEnv()
-	// files := obs.ListFiles(path, []string{})
-	// fmt.Println(files)
+	obs.ConfigFromEnv()
+	files := obs.ListFiles(path, []string{})
+	fmt.Println(files)
 }
 
 func setObjectMeta(path string, headers map[string]string, metas map[string]string) {
-	// obs.ConfigFromEnv()
-	// err := obs.SetObjectMeta(path, headers, metas)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// } else {
-	// 	fmt.Println("set object meta success")
-	// }
+	obs.ConfigFromEnv()
+	err := obs.SetObjectMeta(path, headers, metas)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("set object meta success")
+	}
 }
 
 func signUrl(path string, method string) {

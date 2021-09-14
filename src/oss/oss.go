@@ -57,6 +57,9 @@ func newClient() (*oss.Client, error) {
 	return oss.New(OSS_ENDPOINT, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET)
 }
 
+func newClientWithoutHashVerify() (*oss.Client, error) {
+	return oss.New(OSS_ENDPOINT, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, oss.EnableCRC(false), oss.EnableMD5(false))
+}
 func parseTime(ossdate string) time.Time {
 	// date format
 	// https://golang.org/src/time/format.go
@@ -224,9 +227,10 @@ func Stat(path string) (map[string]interface{}, error) {
 	props, err := bucket.GetObjectDetailedMeta(key)
 	if err != nil {
 		result = map[string]interface{}{
-			"size":         0,
-			"modified":     time.Time{},
-			"content-type": "N/A",
+			"size":             0,
+			"modified":         time.Time{},
+			"content-type":     "N/A",
+			"Content-Encoding": "",
 		}
 
 		return result, err
@@ -240,11 +244,18 @@ func Stat(path string) (map[string]interface{}, error) {
 
 	modified := parseTime(props["Last-Modified"][0])
 	contentType := props["Content-Type"][0]
+	contentEncoding := ""
+
+	ceprops := props["Content-Encoding"]
+	if len(ceprops) > 0 {
+		contentEncoding = ceprops[0]
+	}
 
 	result = map[string]interface{}{
-		"size":         size,
-		"modified":     modified,
-		"content-type": contentType,
+		"size":             size,
+		"modified":         modified,
+		"content-type":     contentType,
+		"content-encoding": contentEncoding,
 	}
 
 	return result, nil
@@ -330,7 +341,7 @@ func ListFiles(path string, filters []string) []map[string]interface{} {
 
 func Download(from string, to string) error {
 
-	client, err := newClient()
+	client, err := newClientWithoutHashVerify()
 	if err != nil {
 		msg := fmt.Sprintf("oss client creation error : %s", err)
 		return errors.New(msg)
@@ -383,7 +394,7 @@ func CopyObject(from string, to string) error {
 		msg := fmt.Sprintf("parse to address error : %s", err)
 		return errors.New(msg)
 	}
-
+	fmt.Printf("CopyObjectTo : %s, %s, %s, %s\n", from_bucket_name, fromkey, to_bucket_name, tokey)
 	_, err = frombucket.CopyObjectTo(to_bucket_name, tokey, fromkey)
 	if err != nil {
 		msg := fmt.Sprintf("CopyObjectTo error : %s", err)
@@ -423,7 +434,7 @@ func SetObjectMeta(path string, headers map[string]string, metas map[string]stri
 	return nil
 }
 
-func SignUrl(path, method string, expiredInSec int64) (string, error) {
+func SignUrl(path string, method string, expiredInSec int64) (string, error) {
 
 	client, err := newClient()
 	if err != nil {

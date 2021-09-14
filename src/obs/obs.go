@@ -7,10 +7,10 @@ import (
 	//"github.com/aliyun/aliyun-obs-go-sdk/obs"
 	"github.com/piaoger/obs-sdk-go/obs"
 	// "strconv"
-	// "strings"
-	"time"
-	"os"
 	"io"
+	"os"
+	"strings"
+	"time"
 )
 
 // from: https://github.com/opentelekomcloud/obs-obsutil/
@@ -20,8 +20,8 @@ import (
 const (
 	FilePermMode = os.FileMode(0664) // Default file permission
 
-	TempFilePrefix = "obs-go-temp-"  // Temp file prefix
-	TempFileSuffix = ".temp"         // Temp file suffix
+	TempFilePrefix = "obs-go-temp-" // Temp file prefix
+	TempFileSuffix = ".temp"        // Temp file suffix
 )
 
 // ContentType is an option to set Content-Type header
@@ -32,19 +32,19 @@ const (
 // ContentMD5 is an option to set Content-MD5 header
 // Expires is an option to set Expires header
 
-func headersToMetaInput(input *obs.SetObjectMetadataInput, headers map[string]string, metas map[string]string)  {
+func headersToMetaInput(input *obs.SetObjectMetadataInput, headers map[string]string, metas map[string]string) {
 
 	for k, v := range headers {
 		if k == "Content-Type" {
 			input.ContentType = v
-		}  else if k == "Cache-Control" {
+		} else if k == "Cache-Control" {
 			input.CacheControl = v
 		} else if k == "Content-Disposition" {
 			input.ContentDisposition = v
 		} else if k == "Content-Encoding" {
 			input.ContentEncoding = v
 		} else if k == "Expires" {
-	 		input.Expires = v
+			input.Expires = v
 		} else {
 
 		}
@@ -71,62 +71,63 @@ func parseTime(obsdate string) time.Time {
 	return d
 }
 
-// func safeListObjects(bucket_name string, obsprefix obs.Option, obsmarker obs.Option, obsdelimiter obs.Option) (obs.ListObjectsResult, error) {
-// 	client, err := newClient()
-// 	if err != nil {
-// 		msg := fmt.Sprintf("obs client creation error : %s", err)
-// 		return obs.ListObjectsResult{}, errors.New(msg)
-// 	}
+func safeListObjects(bucket_name string, obsprefix string, obsmarker string, obsdelimiter string) (*obs.ListObjectsOutput, error) {
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("obs client creation error : %s", err)
+		return &obs.ListObjectsOutput{}, errors.New(msg)
+	}
 
-// 	bucket, err := client.Bucket(bucket_name)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("bucket error error : %s", err)
-// 		return obs.ListObjectsResult{}, errors.New(msg)
-// 	}
+	input := &obs.ListObjectsInput{}
+	input.Bucket = bucket_name
+	input.MaxKeys = 800
+	input.Prefix = obsprefix
+	input.Marker = obsmarker
+	input.Delimiter = obsdelimiter
 
-// 	return bucket.ListObjects(obs.MaxKeys(800), obsprefix, obsmarker, obsdelimiter)
-// }
+	return client.ListObjects(input)
+}
 
-// func listObjects(bucket_name string, key string, delimiter string, timeout int) []obs.ListObjectsResult {
+func listObjects(bucket_name string, key string, delimiter string, timeout int) []*obs.ListObjectsOutput {
 
-// 	calls := 0
+	calls := 0
 
-// 	results := []obs.ListObjectsResult{}
+	results := []*obs.ListObjectsOutput{}
 
-// 	obsprefix := obs.Prefix(key)
-// 	obsmarker := obs.Marker("")
-// 	obsdelimiter := obs.Delimiter(delimiter)
-// 	for {
-// 		lsRes, err := safeListObjects(bucket_name, obsprefix, obsmarker, obsdelimiter)
-// 		if err != nil {
-// 			break
-// 		}
+	obsprefix := key
+	obsmarker := ""
+	obsdelimiter := delimiter
+	for {
+		lsRes, err := safeListObjects(bucket_name, obsprefix, obsmarker, obsdelimiter)
+		if err != nil {
+			break
+		}
 
-// 		obsprefix = obs.Prefix(lsRes.Prefix)
-// 		obsmarker = obs.Marker(lsRes.NextMarker)
+		obsprefix = lsRes.Prefix
+		obsmarker = lsRes.NextMarker
 
-// 		if calls == 8 {
-// 			utils.Sleep(2 * timeout)
-// 		} else if calls == 16 {
-// 			utils.Sleep(4 * timeout)
-// 		} else if calls == 32 {
-// 			utils.Sleep(6 * timeout)
-// 		} else if calls == 64 {
-// 			utils.Sleep(8 * timeout)
-// 			calls = 0
-// 		} else {
-// 			utils.Sleep(500)
-// 		}
+		if calls == 8 {
+			utils.Sleep(2 * timeout)
+		} else if calls == 16 {
+			utils.Sleep(4 * timeout)
+		} else if calls == 32 {
+			utils.Sleep(6 * timeout)
+		} else if calls == 64 {
+			utils.Sleep(8 * timeout)
+			calls = 0
+		} else {
+			utils.Sleep(500)
+		}
 
-// 		calls += 1
+		calls += 1
 
-// 		results = append(results, lsRes)
-// 		if !lsRes.IsTruncated {
-// 			break
-// 		}
-// 	}
-// 	return results
-// }
+		results = append(results, lsRes)
+		if !lsRes.IsTruncated {
+			break
+		}
+	}
+	return results
+}
 
 func Upload(from string, to string, headers map[string]string, metas map[string]string) error {
 
@@ -161,7 +162,7 @@ func Upload(from string, to string, headers map[string]string, metas map[string]
 	}
 
 	// let's set meta data after that
-	SetObjectMeta(to, headers , metas )
+	SetObjectMeta(to, headers, metas)
 
 	return nil
 }
@@ -189,7 +190,6 @@ func UploadDir(from string, to string, headers map[string]string, metas map[stri
 
 	collected := map[string]string{}
 	utils.CollectFiles(from, to, false, collected)
-
 
 	for k, v := range collected {
 		err = Upload(k, v, headers, metas)
@@ -244,83 +244,85 @@ func Stat(path string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-// func ListBuckets() []string {
-// 	client, err := newClient()
-// 	if err != nil {
-// 		return []string{}
-// 	}
+func ListBuckets() []string {
+	client, err := newClient()
+	if err != nil {
+		return []string{}
+	}
 
-// 	// 列出Bucket，默认100条。
-// 	lsRes, err := client.ListBuckets()
-// 	if err != nil {
-// 		return []string{}
-// 	}
+	// 列出Bucket，默认100条。
+	input := &obs.ListBucketsInput{}
+	input.QueryLocation = true
+	output, err := client.ListBuckets(input)
+	if err != nil {
+		return []string{}
+	}
 
-// 	buckets := make([]string, len(lsRes.Buckets))
-// 	for i, b := range lsRes.Buckets {
-// 		buckets[i] = b.Name
+	buckets := make([]string, len(output.Buckets))
+	for i, b := range output.Buckets {
+		buckets[i] = b.Name
 
-// 	}
+	}
 
-// 	return buckets
-// }
+	return buckets
+}
 
-// func ListDir(path string) []string {
+func ListDir(path string) []string {
 
-// 	dirs := []string{}
-// 	bucket_name, key, _ := utils.ParseAddress(path)
-// 	results := listObjects(bucket_name, key, "/", 200)
+	dirs := []string{}
+	bucket_name, key, _ := utils.ParseAddress(path)
+	results := listObjects(bucket_name, key, "/", 200)
 
-// 	for i := 0; i < len(results); i += 1 {
-// 		lsRes := results[i]
-// 		for j := 0; j < len(lsRes.CommonPrefixes); j += 1 {
-// 			key := lsRes.CommonPrefixes[j]
-// 			dirs = append(dirs, strings.TrimSuffix(key, "/"))
-// 		}
-// 	}
+	for i := 0; i < len(results); i += 1 {
+		lsRes := results[i]
+		for j := 0; j < len(lsRes.CommonPrefixes); j += 1 {
+			key := lsRes.CommonPrefixes[j]
+			dirs = append(dirs, strings.TrimSuffix(key, "/"))
+		}
+	}
 
-// 	return dirs
-// }
+	return dirs
+}
 
-// func ListFiles(path string, filters []string) []map[string]interface{} {
+func ListFiles(path string, filters []string) []map[string]interface{} {
 
-// 	files := []map[string]interface{}{}
-// 	bucket_name, key, _ := utils.ParseAddress(path)
-// 	results := listObjects(bucket_name, key, "", 200)
-// 	for i := 0; i < len(results); i += 1 {
-// 		lsRes := results[i]
-// 		for j := 0; j < len(lsRes.Objects); j += 1 {
-// 			obj := lsRes.Objects[j]
-// 			// parts := strings.Split(obj.Key, "/")
-// 			// name := parts[len(parts)-1]
+	files := []map[string]interface{}{}
+	bucket_name, key, _ := utils.ParseAddress(path)
+	results := listObjects(bucket_name, key, "", 200)
+	for i := 0; i < len(results); i += 1 {
+		lsRes := results[i]
+		for j := 0; j < len(lsRes.Contents); j += 1 {
+			obj := lsRes.Contents[j]
+			// parts := strings.Split(obj.Key, "/")
+			// name := parts[len(parts)-1]
 
-// 			name := strings.Replace(obj.Key, key, "", -1)
+			name := strings.Replace(obj.Key, key, "", -1)
 
-// 			if name == "" || strings.Contains(name, "/") {
-// 				continue
-// 			}
+			if name == "" || strings.Contains(name, "/") {
+				continue
+			}
 
-// 			wanted := len(filters) == 0
-// 			for fi := 0; fi < len(filters); fi += 1 {
-// 				if name == filters[fi] {
-// 					wanted = true
-// 					break
-// 				}
-// 			}
+			wanted := len(filters) == 0
+			for fi := 0; fi < len(filters); fi += 1 {
+				if name == filters[fi] {
+					wanted = true
+					break
+				}
+			}
 
-// 			if wanted {
-// 				fileinfo := map[string]interface{}{
-// 					"name":     name,
-// 					"size":     obj.Size,
-// 					"modified": obj.LastModified,
-// 				}
-// 				files = append(files, fileinfo)
-// 			}
-// 		}
-// 	}
+			if wanted {
+				fileinfo := map[string]interface{}{
+					"name":     name,
+					"size":     obj.Size,
+					"modified": obj.LastModified,
+				}
+				files = append(files, fileinfo)
+			}
+		}
+	}
 
-// 	return files
-// }
+	return files
+}
 
 func Download(from string, to string) error {
 
@@ -364,41 +366,40 @@ func Download(from string, to string) error {
 	return os.Rename(tempFilePath, to)
 }
 
-// func CopyObject(from string, to string) error {
+func CopyObject(from string, to string) error {
 
-// 	client, err := newClient()
-// 	if err != nil {
-// 		msg := fmt.Sprintf("obs client creation error : %s", err)
-// 		return errors.New(msg)
-// 	}
+	client, err := newClient()
+	if err != nil {
+		msg := fmt.Sprintf("obs client creation error : %s", err)
+		return errors.New(msg)
+	}
 
-// 	from_bucket_name, fromkey, err := utils.ParseAddress(from)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("parse from address error : %s", err)
-// 		return errors.New(msg)
-// 	}
+	from_bucket_name, from_key, err := utils.ParseAddress(from)
+	if err != nil {
+		msg := fmt.Sprintf("parse address error : %s", err)
+		return errors.New(msg)
+	}
 
-// 	frombucket, err := client.Bucket(from_bucket_name)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("from bucket error : %s", err)
-// 		return errors.New(msg)
-// 	}
+	to_bucket_name, to_key, err := utils.ParseAddress(to)
+	if err != nil {
+		msg := fmt.Sprintf("parse to address error : %s", err)
+		return errors.New(msg)
+	}
 
-// 	to_bucket_name, tokey, err := utils.ParseAddress(to)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("parse to address error : %s", err)
-// 		return errors.New(msg)
-// 	}
+	input := &obs.CopyObjectInput{}
+	input.Bucket = to_bucket_name
+	input.Key = to_key
+	input.CopySourceBucket = from_bucket_name
+	input.CopySourceKey = from_key
 
-// 	_, err = frombucket.CopyObjectTo(to_bucket_name, tokey, fromkey)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("CopyObjectTo error : %s", err)
-// 		return errors.New(msg)
-// 	}
+	_, err = client.CopyObject(input)
+	if err != nil {
+		msg := fmt.Sprintf("CopyObject error : %s", err)
+		return errors.New(msg)
+	}
 
-// 	return nil
-
-// }
+	return nil
+}
 
 func SetObjectMeta(path string, headers map[string]string, metas map[string]string) error {
 

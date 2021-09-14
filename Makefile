@@ -27,7 +27,16 @@ GO_DEPS := \
 	"github.com/aliyun/aliyun-oss-go-sdk/oss" \
 	"qiniupkg.com/api.v7" \
 	"github.com/qiniu/api.v6" \
-	"github.com/piaoger/obs-sdk-go"
+	"github.com/piaoger/obs-sdk-go" \
+	"github.com/Azure/azure-storage-blob-go"\
+	"github.com/Azure/azure-pipeline-go/pipeline" \
+	"github.com/Azure/azure-pipeline-go"\
+	"github.com/Azure/go-autorest/autorest/adal" \
+	"github.com/google/uuid" \
+	"golang.org/x/sys" \
+	"gopkg.in/check.v1" \
+	"github.com/mattn/go-ieproxy"
+
 .PHONY: build
 
 
@@ -63,6 +72,7 @@ build:
 	@${GO} build -o build/bin/lager-oss ./src/lager-cli.oss
 	@${GO} build -o build/bin/lager-qiniu ./src/lager-cli.qiniu
 	@${GO} build -o build/bin/lager-obs ./src/lager-cli.obs
+	@${GO} build -o build/bin/lager-azure ./src/lager-cli.azure
 
 build-obs:
 	@echo 'building obs tools ...'
