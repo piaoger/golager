@@ -50,7 +50,7 @@ func main() {
 				}
 			}
 		}
-		fmt.Println("% % ", from, to)
+		fmt.Println("uploading: %s %s ", from, to)
 		upload(from, to, headers, metas)
 	}
 

@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	FilePermMode = os.FileMode(0664) // Default file permission
-
+	FilePermMode    = os.FileMode(0664) // Default file permission
+	RetryTryTimeout = 20 * time.Second
 )
 
 func toBlobHeaders(headers map[string]string) azblob.BlobHTTPHeaders {
@@ -46,7 +46,7 @@ func newCredential() (*azblob.SharedKeyCredential, error) {
 }
 
 func buildUrl(bucket string, key string) (*url.URL, error) {
-	u, err := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net/%s/%s", AZURE_STORAGE_ACCOUNT, bucket, key))
+	u, err := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net/%s", bucket, key))
 	return u, err
 }
 
@@ -55,7 +55,7 @@ func Upload(from string, to string, headers map[string]string, metas map[string]
 
 	ctx := context.Background()
 
-	retryTryTimeout := time.Second
+	retryTryTimeout := RetryTryTimeout
 
 	credential, err := newCredential()
 	if err != nil {
@@ -90,15 +90,91 @@ func Upload(from string, to string, headers map[string]string, metas map[string]
 
 func UploadDir(from string, to string, headers map[string]string, metas map[string]string) error {
 
-	fmt.Println("not impl")
-	return errors.New("not impl")
+	fmt.Println("azure::UploadDir - not impl")
+	return errors.New("azure::UploadDir - not impl")
 }
 
 func Stat(path string) (map[string]interface{}, error) {
 
-	fmt.Println("not impl")
-	result := map[string]interface{}{}
-	return result, errors.New("not impl")
+	result := map[string]interface{}{
+		"size":             0,
+		"modified":         time.Time{},
+		"content-encoding": "N/A",
+		"cacthe-control":   "N/A",
+		"content-type":     "N/A",
+		"Content-Encoding": "",
+		"metadata":         map[string]string{},
+	}
+
+	ctx := context.Background()
+	retryTryTimeout := RetryTryTimeout
+
+	credential, err := newCredential()
+	if err != nil {
+		fmt.Println("auth: %s", err.Error())
+		return result, err
+	}
+
+	bucket_name, key, err := utils.ParseAddress(path)
+	if err != nil {
+		return result, err
+	}
+
+	u, _ := buildUrl(bucket_name, key)
+	blockBlobURL := azblob.NewBlockBlobURL(*u, azblob.NewPipeline(credential, azblob.PipelineOptions{
+		Retry: azblob.RetryOptions{
+			TryTimeout: retryTryTimeout,
+		},
+	}))
+
+	resp, err := blockBlobURL.GetProperties(ctx, azblob.BlobAccessConditions{}, azblob.ClientProvidedKeyOptions{})
+	if err != nil {
+		return result, err
+	}
+
+	metas := resp.NewMetadata()
+
+	result = map[string]interface{}{
+		"size":             resp.ContentLength(),
+		"modified":         resp.LastModified(),
+		"content-type":     resp.ContentType(),
+		"content-md5":      resp.ContentMD5(),
+		"content-encoding": resp.ContentEncoding(),
+		"cacthe-control":   resp.CacheControl(),
+
+		"metadata": metas,
+	}
+
+	return result, err
+
+}
+
+func Delete(path string) error {
+
+	ctx := context.Background()
+	retryTryTimeout := RetryTryTimeout
+
+	credential, err := newCredential()
+	if err != nil {
+		fmt.Println("auth: %s", err.Error())
+		return err
+	}
+
+	bucket_name, key, err := utils.ParseAddress(path)
+	if err != nil {
+		return err
+	}
+
+	u, _ := buildUrl(bucket_name, key)
+	blockBlobURL := azblob.NewBlockBlobURL(*u, azblob.NewPipeline(credential, azblob.PipelineOptions{
+		Retry: azblob.RetryOptions{
+			TryTimeout: retryTryTimeout,
+		},
+	}))
+
+	_, err = blockBlobURL.Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
+
+	return err
 }
 
 func ListBuckets() []string {
@@ -120,7 +196,7 @@ func ListFiles(path string, filters []string) []map[string]interface{} {
 
 func Download(from string, to string) error {
 
-	retryTryTimeout := time.Second
+	retryTryTimeout := RetryTryTimeout
 	ctx := context.Background()
 	credential, err := newCredential()
 	if err != nil {

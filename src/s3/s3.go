@@ -177,6 +177,10 @@ func Stat(path string) (map[string]interface{}, error) {
 	return result, nil
 }
 
+func Delete(path string) error {
+	return errors.New("not impl")
+}
+
 func ListFiles(path string, filters []string) []map[string]interface{} {
 
 	bucket_name, key, _ := utils.ParseAddress(path)

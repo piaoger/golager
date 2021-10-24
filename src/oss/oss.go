@@ -100,6 +100,7 @@ func listObjects(bucket_name string, key string, delimiter string, timeout int) 
 	for {
 		lsRes, err := safeListObjects(bucket_name, ossprefix, ossmarker, ossdelimiter)
 		if err != nil {
+			fmt.Println(err.Error())
 			break
 		}
 
@@ -229,12 +230,17 @@ func Stat(path string) (map[string]interface{}, error) {
 		result = map[string]interface{}{
 			"size":             0,
 			"modified":         time.Time{},
+			"content-encoding": "N/A",
+			"cacthe-control":   "N/A",
 			"content-type":     "N/A",
 			"Content-Encoding": "",
+			"metadata":         map[string]string{},
 		}
 
 		return result, err
 	}
+
+	fmt.Println("%v", props)
 
 	contentLength := props["Content-Length"][0]
 	size, err := strconv.ParseInt(contentLength, 10, 64)
@@ -242,8 +248,21 @@ func Stat(path string) (map[string]interface{}, error) {
 		size = 0
 	}
 
+	metas := map[string]string{}
+	for k, v := range props {
+
+		if strings.Contains(k, "X-Oss-Meta-") {
+			nk := strings.TrimPrefix(k, "X-Oss-Meta-")
+			metas[nk] = v[0]
+		}
+	}
+
 	modified := parseTime(props["Last-Modified"][0])
+
 	contentType := props["Content-Type"][0]
+	contentMd5 := props["Content-Md5"][0]
+
+	cacheControl := props["Cache-Control"][0]
 	contentEncoding := ""
 
 	ceprops := props["Content-Encoding"]
@@ -255,7 +274,11 @@ func Stat(path string) (map[string]interface{}, error) {
 		"size":             size,
 		"modified":         modified,
 		"content-type":     contentType,
+		"content-md5":      contentMd5,
 		"content-encoding": contentEncoding,
+		"cacthe-control":   cacheControl,
+
+		"metadata": metas,
 	}
 
 	return result, nil
@@ -283,6 +306,23 @@ func ListBuckets() []string {
 }
 
 func ListDir(path string) []string {
+
+	dirs := []string{}
+	bucket_name, key, _ := utils.ParseAddress(path)
+	results := listObjects(bucket_name, key, "/", 200)
+
+	for i := 0; i < len(results); i += 1 {
+		lsRes := results[i]
+		for j := 0; j < len(lsRes.CommonPrefixes); j += 1 {
+			key := lsRes.CommonPrefixes[j]
+			dirs = append(dirs, strings.TrimSuffix(key, "/"))
+		}
+	}
+
+	return dirs
+}
+
+func ListObjects(path string) []string {
 
 	dirs := []string{}
 	bucket_name, key, _ := utils.ParseAddress(path)
@@ -367,6 +407,10 @@ func Download(from string, to string) error {
 
 	return nil
 
+}
+
+func Delete(path string) error {
+	return errors.New("not impl")
 }
 
 func CopyObject(from string, to string) error {
